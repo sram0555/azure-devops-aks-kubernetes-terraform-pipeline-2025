@@ -16,10 +16,36 @@ stages:
       continueOnError: false
       steps:
       - task: PublishPipelineArtifact@1
+        displayName: publish artifact
         inputs:
           targetPath: '$(Pipeline.Workspace)'
           artifact: 'terraform-manifests-out'
           publishLocation: 'pipeline'
-        
+      - task: TerraformInstaller@1
+        displayName: Terraform Install
+        inputs:
+          terraformVersion: 'latest'
+
+      - task: TerraformTaskV4@4
+        displayName: terraform init
+        inputs:
+          provider: 'azurerm'
+          command: 'init'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-manifests'
+          backendServiceArm: 'terraform-aks-azurerm-svc-con'
+          backendAzureRmResourceGroupName: 'aksclusterrg'
+          backendAzureRmStorageAccountName: 'stgazdevops'
+          backendAzureRmContainerName: 'terraformtfstate'
+          backendAzureRmKey: 'akscluster.tfstate'
+          
+      - task: TerraformTaskV4@4
+        displayName: terraform validate
+        inputs:
+          provider: 'azurerm'
+          command: 'validate'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/terraform-manifests'
+          
+
+
       
 
